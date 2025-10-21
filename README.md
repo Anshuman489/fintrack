@@ -1,2 +1,2 @@
 # fintrack
-Full Stack AI Finance Platform in React 19 + Next JS 15 with Tailwind CSS, Supabase, Prisma, Clerk Authentication, Inngest, Arcjet Shadcn
+A comprehensive full-stack web application designed to help users track, manage, and understand their financial activities. Users can log income and expenses, categorize transactions, view detailed summaries of their spending habits, and automatically extract transaction data from uploaded receipts using AI.
