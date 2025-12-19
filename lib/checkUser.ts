@@ -1,5 +1,5 @@
 import { currentUser } from "@clerk/nextjs/server";
-import { db } from "./prisma";
+import prisma from "./prisma";
 
 export const checkUser = async () => {
   const user = await currentUser();
@@ -9,7 +9,7 @@ export const checkUser = async () => {
   }
 
   try {
-    const loggedInUser = await db.user.findUnique({
+    const loggedInUser = await prisma.user.findUnique({
       where: {
         clerkUserId: user.id,
       },
@@ -21,7 +21,7 @@ export const checkUser = async () => {
 
     const name = `${user.firstName} ${user.lastName}`;
 
-    const newUser = await db.user.create({
+    const newUser = await prisma.user.create({
       data: {
         clerkUserId: user.id,
         name,

@@ -40,7 +40,7 @@ export default function Home() {
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {featuresData.map((feature, index) => (
-              <Card key={index}>
+              <Card key={index} className="p-6">
                 <CardContent className="space-y-4 pt-4">
                   {feature.icon}
                   <h3 className="text-xl font-semibold">{feature.title}</h3>

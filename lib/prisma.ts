@@ -1,16 +1,21 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client'
+
+const prismaClientSingleton = () => {
+  return new PrismaClient({
+    datasourceUrl: process.env.DATABASE_URL,
+  })
+}
 
 declare global {
-  var prisma: PrismaClient | undefined
+  var prisma: undefined | ReturnType<typeof prismaClientSingleton>
 }
 
-export const db = globalThis.prisma || new PrismaClient();
+const prisma = globalThis.prisma ?? prismaClientSingleton()
 
-if (process.env.NODE_ENV !== "production") {
-  globalThis.prisma = db;
-}
+export default prisma
 
-// globalThis.prisma: This global variable ensures that the Prisma client instance is
-// reused across hot reloads during development. Without this, each time your application
-// reloads, a new instance of the Prisma client would be created, potentially leading
-// to connection issues.
+if (process.env.NODE_ENV !== 'production') globalThis.prisma = prisma
+
+//glovalThis.prisma is used to prevent multiple instances of Prisma Client in development
+//environment due to hot reloading. In production, a single instance is sufficient.
+//This setup ensures efficient database connections and resource management.
