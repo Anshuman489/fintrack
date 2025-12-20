@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Account } from "@/generated/prisma/wasm";
-import { ArrowDownRight, ArrowUp, ArrowUpRight } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { updateDefaultAccount } from "@/actions/accounts";
 import useFetch from "@/hooks/use-fetch";
