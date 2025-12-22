@@ -38,7 +38,7 @@ const Header = async () => {
               </Button>
             </Link>
 
-            <Link href={"/dashboard"}>
+            <Link href={"/transaction/create"}>
               <Button className="cursor-pointer">
                 <PenBox size={18} />
                 <span className="hidden md:inline">Add Transaction</span>
