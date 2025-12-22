@@ -121,12 +121,12 @@
   }
 }
 
-@layer utilities{
-  .gradient{
+@layer utilities {
+  .gradient {
     @apply bg-linear-to-br from-blue-600 to-purple-600;
   }
 
-  .gradient-title{
+  .gradient-title {
     @apply font-extrabold tracking-tighter pr-2 pb-2 text-transparent bg-clip-text;
   }
 }
@@ -135,7 +135,7 @@
   perspective: 1000px;
 }
 
-.hero-image{
+.hero-image {
   transform: rotateX(15deg) scale(1);
   transition: transform 0.5s ease-out;
   will-change: transform;
@@ -143,4 +143,21 @@
 
 .hero-image.scrolled {
   transform: rotateX(0deg) scale(1) translateY(40px);
+}
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientMove 3s ease infinite;
 }

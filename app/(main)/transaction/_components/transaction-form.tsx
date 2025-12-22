@@ -30,6 +30,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import ReceiptScanner from "./receipt-scanner";
+import { log } from "console";
 
 const AddTransactionForm = ({ accounts, categories }: any) => {
   const router = useRouter();
@@ -85,9 +87,23 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
     (category: any) => category.type === type
   );
 
+  const handleScanComplete = (scannedData: any) => {
+    if (scannedData) {
+      setValue("amount", scannedData.amount.toString());
+      setValue("date", new Date(scannedData.date));
+      if (scannedData.description) {
+        setValue("description", scannedData.description);
+      }
+      if (scannedData.category) {
+        setValue("category", scannedData.category);
+      }
+    }
+  };
+
   return (
     <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
       {/* AI Receipt Scanner */}
+      <ReceiptScanner onScanComplete={handleScanComplete} />
       <div className="space-y-2">
         <label className="text-sm font-medium">Type</label>
         <Select
