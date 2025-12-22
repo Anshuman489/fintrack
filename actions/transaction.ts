@@ -1,13 +1,15 @@
-"use server"
+"use server";
 
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { request } from "@arcjet/next";
+import aj from "@/lib/arcjet";
 
 const serializeAmount = (obj: any) => ({
   ...obj,
   amount: obj.amount.toNumber(),
-})
+});
 
 interface CreateTransactionData {
   accountId: string;
@@ -25,6 +27,29 @@ export async function createTransaction(data: CreateTransactionData) {
     if (!userId) throw new Error("Unauthorized");
 
     //arcjet to add rate limiting to this api
+
+    const req = await request();
+    //check rate limit
+    const decision = await aj.protect(req, {
+      userId,
+      requested: 1, //Specify how many tokens to consume
+    });
+
+    if (decision.isDenied()) {
+      if (decision.reason.isRateLimit()) {
+        const { remaining, reset } = decision.reason;
+        console.error({
+          code: "RATE_LIMIT_EXCEEDED",
+          details: {
+            remaining,
+            resetInSeconds: reset,
+          },
+        });
+
+        throw new Error("Too many requests. Please try again later.");
+      }
+      throw new Error("Request Blocked.");
+    }
 
     const user = await prisma.user.findUnique({
       where: { clerkUserId: userId },
