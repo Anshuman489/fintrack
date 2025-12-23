@@ -55,7 +55,7 @@ const ReceiptScanner = ({ onScanComplete }: any) => {
         {scanReceiptLoading ? (
           <>
             <Loader2 className="mr-2 animate-spin" />
-            <span>Scanning... Receipt</span>
+            <span>Scanning Receipt...</span>
           </>
         ) : (
           <>

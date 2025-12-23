@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import useFetch from "@/hooks/use-fetch";
-import { createTransaction } from "@/actions/transaction";
+import { createTransaction, updateTransaction } from "@/actions/transaction";
 import { transactionSchema } from "@/app/lib/schema";
 import React, { useEffect, useState } from "react";
 
@@ -25,15 +25,23 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Switch } from "@/components/ui/switch";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import ReceiptScanner from "./receipt-scanner";
 
-const AddTransactionForm = ({ accounts, categories }: any) => {
+const AddTransactionForm = ({
+  accounts,
+  categories,
+  editMode = false,
+  initialData = null,
+}: any) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const editId = searchParams?.get("edit");
+
   const [calendarOpen, setCalendarOpen] = useState(false);
   const {
     register,
@@ -45,22 +53,36 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
     reset,
   } = useForm({
     resolver: zodResolver(transactionSchema),
-    defaultValues: {
-      type: "EXPENSE",
-      amount: "",
-      description: "",
-      accountId: accounts.find((ac: any) => ac.isDefault)?.id,
-      date: new Date(),
-      category: "",
-      isRecurring: false,
-    },
+    defaultValues:
+      editMode && initialData
+        ? {
+            type: initialData.type,
+            amount: initialData.amount.toString(),
+            description: initialData.description,
+            accountId: initialData.accountId,
+            category: initialData.category,
+            date: new Date(initialData.date),
+            isRecurring: initialData.isRecurring,
+            ...(initialData.recurringInterval && {
+              recurringInterval: initialData.recurringInterval,
+            }),
+          }
+        : {
+            type: "EXPENSE",
+            amount: "",
+            description: "",
+            accountId: accounts.find((ac: any) => ac.isDefault)?.id,
+            date: new Date(),
+            category: "",
+            isRecurring: false,
+          },
   });
 
   const {
     loading: transactionLoading,
     fn: transactionFn,
     data: transactionResult,
-  } = useFetch(createTransaction);
+  } = useFetch(editMode ? updateTransaction : createTransaction);
 
   const type = watch("type");
   const isRecurring = watch("isRecurring");
@@ -72,16 +94,27 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
       amount: parseFloat(data.amount),
     };
 
-    transactionFn(formData);
+    if (editMode) {
+      transactionFn(editId, formData);
+    } else {
+      transactionFn(formData);
+    }
   };
 
   useEffect(() => {
     if (transactionResult?.success && !transactionLoading) {
-      toast.success("Transaction created successfully");
-      reset();
+      toast.success(
+        editMode
+          ? "Transaction updated successfully"
+          : "Transaction created successfully"
+      );
+      // Only reset form if not in edit mode
+      if (!editMode) {
+        reset();
+      }
       router.push(`/account/${transactionResult.data.accountId}`);
     }
-  }, [transactionResult, transactionLoading]);
+  }, [transactionResult, transactionLoading, editMode]);
 
   const filteredCategories = categories.filter(
     (category: any) => category.type === type
@@ -103,7 +136,7 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
   return (
     <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
       {/* AI Receipt Scanner */}
-      <ReceiptScanner onScanComplete={handleScanComplete} />
+      {!editMode && <ReceiptScanner onScanComplete={handleScanComplete} />}
       <div className="space-y-2">
         <label className="text-sm font-medium">Type</label>
         <Select
@@ -122,7 +155,9 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
         </Select>
 
         {errors.type && (
-          <p className="text-sm text-red-500">{errors.type.message}</p>
+          <p className="text-sm text-red-500">
+            {errors.type.message as string}
+          </p>
         )}
       </div>
 
@@ -137,7 +172,9 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
           />
 
           {errors.amount && (
-            <p className="text-sm text-red-500">{errors.amount.message}</p>
+            <p className="text-sm text-red-500">
+              {errors.amount.message as string}
+            </p>
           )}
         </div>
 
@@ -168,7 +205,9 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
           </Select>
 
           {errors.accountId && (
-            <p className="text-sm text-red-500">{errors.accountId.message}</p>
+            <p className="text-sm text-red-500">
+              {errors.accountId.message as string}
+            </p>
           )}
         </div>
       </div>
@@ -192,7 +231,9 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
         </Select>
 
         {errors.category && (
-          <p className="text-sm text-red-500">{errors.category.message}</p>
+          <p className="text-sm text-red-500">
+            {errors.category.message as string}
+          </p>
         )}
       </div>
 
@@ -226,7 +267,9 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
           </PopoverContent>
         </Popover>
         {errors.date && (
-          <p className="text-sm text-red-500">{errors.date.message}</p>
+          <p className="text-sm text-red-500">
+            {errors.date.message as string}
+          </p>
         )}
       </div>
 
@@ -234,7 +277,9 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
         <label className="text-sm font-medium">Description</label>
         <Input placeholder="Enter description" {...register("description")} />
         {errors.description && (
-          <p className="text-sm text-red-500">{errors.description.message}</p>
+          <p className="text-sm text-red-500">
+            {errors.description.message as string}
+          </p>
         )}
       </div>
 
@@ -283,7 +328,7 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
 
           {errors.recurringInterval && (
             <p className="text-sm text-red-500">
-              {errors.recurringInterval.message}
+              {errors.recurringInterval.message as string}
             </p>
           )}
         </div>
@@ -303,7 +348,16 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
           className="flex-1 cursor-pointer"
           disabled={transactionLoading}
         >
-          Create Transaction
+          {transactionLoading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {editMode ? "Updating..." : "Creating..."}
+            </>
+          ) : editMode ? (
+            "Update Transaction"
+          ) : (
+            "Create Transaction"
+          )}
         </Button>
       </div>
     </form>
