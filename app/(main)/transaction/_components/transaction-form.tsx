@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import useFetch from "@/hooks/use-fetch";
 import { createTransaction } from "@/actions/transaction";
 import { transactionSchema } from "@/app/lib/schema";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,10 +31,10 @@ import { Switch } from "@/components/ui/switch";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import ReceiptScanner from "./receipt-scanner";
-import { log } from "console";
 
 const AddTransactionForm = ({ accounts, categories }: any) => {
   const router = useRouter();
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const {
     register,
     setValue,
@@ -199,7 +199,7 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
       <div className="space-y-2">
         <label className="text-sm font-medium">Date</label>
 
-        <Popover>
+        <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="outline"
@@ -213,7 +213,12 @@ const AddTransactionForm = ({ accounts, categories }: any) => {
             <Calendar
               mode="single"
               selected={date}
-              onSelect={(date) => date && setValue("date", date)}
+              onSelect={(date) => {
+                if (date) {
+                  setValue("date", date);
+                  setCalendarOpen(false);
+                }
+              }}
               disabled={(date) =>
                 date > new Date() || date < new Date("1900-01-01")
               }
