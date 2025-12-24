@@ -31,10 +31,12 @@ const ReceiptScanner = ({ onScanComplete }: ReceiptScannerProps) => {
 
   useEffect(() =>{
     if(scannedData && !scanReceiptLoading) {
+      setTimeout(() => {
       onScanComplete(scannedData);
       toast.success("Receipt scanned successfully");
+    }, 0);
     }
-  }, [scanReceiptLoading, scannedData, onScanComplete]);
+  }, [scanReceiptLoading, scannedData]);
   return (
     <div>
       <input
