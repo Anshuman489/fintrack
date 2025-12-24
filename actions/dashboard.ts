@@ -1,8 +1,8 @@
 "use server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
-import { AccountType } from "@/generated/prisma/wasm";
 import { revalidatePath } from "next/cache";
+import { AccountType } from "@prisma/client";
 
 type CreateAccountData = {
   name: string;
