@@ -4,7 +4,7 @@ import { render } from "@react-email/render";
 interface SendEmailParams {
   to: string;
   subject: string;
-  react: any;
+  react: React.ReactElement;
 }
 
 export async function sendEmail({ to, subject, react }: SendEmailParams) {

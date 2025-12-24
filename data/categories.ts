@@ -1,4 +1,6 @@
-export const defaultCategories = [
+import { Category } from "@/types";
+
+export const defaultCategories: Category[] = [
   // Income Categories
   {
     id: "salary",
@@ -161,7 +163,7 @@ export const defaultCategories = [
   },
 ];
 
-export const categoryColors = defaultCategories.reduce((acc, category) => {
-  acc[category.id] = category.color;
+export const categoryColors = defaultCategories.reduce<Record<string, string>>((acc, category) => {
+  acc[category.id] = category.color ?? "#000000";
   return acc;
 }, {});

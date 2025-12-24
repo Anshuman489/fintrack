@@ -49,6 +49,7 @@ import { bulkDeleteTransactions } from "@/actions/accounts";
 import useFetch from "@/hooks/use-fetch";
 import { toast } from "sonner";
 import { BarLoader } from "react-spinners";
+import { Transaction } from "@/types";
 
 const RECURRING_INTERVALS: Record<string, string> = {
   DAILY: "Daily",
@@ -65,7 +66,11 @@ type SortConfig = {
   direction: SortDirection;
 };
 
-const TransactionTable = ({ transactions }: any) => {
+const TransactionTable = ({
+  transactions,
+}: {
+  transactions: Transaction[];
+}) => {
   const router = useRouter();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [sortConfig, setSortConfig] = useState<SortConfig>({
@@ -89,14 +94,14 @@ const TransactionTable = ({ transactions }: any) => {
     //Apply search filter
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
-      result = result.filter((transaction: any) =>
+      result = result.filter((transaction: Transaction) =>
         transaction.description.toLowerCase().includes(searchLower)
       );
     }
 
     //Apply recurring filter
     if (recurringFilter) {
-      result = result.filter((transaction: any) => {
+      result = result.filter((transaction: Transaction) => {
         if (recurringFilter === "recurring") return transaction.isRecurring;
         return !transaction.isRecurring;
       });
@@ -105,7 +110,7 @@ const TransactionTable = ({ transactions }: any) => {
     //Apply type filter
     if (typeFilter) {
       result = result.filter(
-        (transaction: any) => transaction.type === typeFilter
+        (transaction: Transaction) => transaction.type === typeFilter
       );
     }
 
@@ -153,7 +158,7 @@ const TransactionTable = ({ transactions }: any) => {
     setSelectedIds((current) =>
       current.length === filteredAndSortedTransactions.length
         ? []
-        : filteredAndSortedTransactions.map((t: any) => t.id)
+        : filteredAndSortedTransactions.map((t: Transaction) => t.id)
     );
   };
 
@@ -163,7 +168,6 @@ const TransactionTable = ({ transactions }: any) => {
         `Are you sure you want to delete ${selectedIds.length} transactions?`
       )
     ) {
-
       return;
     }
 
@@ -258,7 +262,7 @@ const TransactionTable = ({ transactions }: any) => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[50px] cursor-pointer">
+              <TableHead className="w-12.5 cursor-pointer">
                 <Checkbox
                   className="border-gray-600 cursor-pointer"
                   onCheckedChange={handleSelectAll}
@@ -313,7 +317,7 @@ const TransactionTable = ({ transactions }: any) => {
                 </div>
               </TableHead>
               <TableHead>Recurring</TableHead>
-              <TableHead className="w-[50px]" />
+              <TableHead className="w-12.5" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -327,7 +331,7 @@ const TransactionTable = ({ transactions }: any) => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredAndSortedTransactions.map((transaction: any) => (
+              filteredAndSortedTransactions.map((transaction: Transaction) => (
                 <TableRow key={transaction.id}>
                   <TableCell>
                     <Checkbox
@@ -371,17 +375,21 @@ const TransactionTable = ({ transactions }: any) => {
                             className="gap-1 bg-purple-100 text-purple-700 hover:bg-purple-200"
                           >
                             <RefreshCw className="h-3 w-3" />
-                            {RECURRING_INTERVALS[transaction.recurringInterval]}
+                            {RECURRING_INTERVALS[
+                              transaction.recurringInterval ?? "MONTHLY"
+                            ] ?? "Unknown"}
                           </Badge>
                         </TooltipTrigger>
                         <TooltipContent>
                           <div className="text-sm">
                             <div className="font-medium">Next Date:</div>
                             <div>
-                              {format(
-                                new Date(transaction.nextRecurringDate),
-                                "PP"
-                              )}
+                              {transaction.nextRecurringDate
+                                ? format(
+                                    new Date(transaction.nextRecurringDate),
+                                    "PP"
+                                  )
+                                : "N/A"}
                             </div>
                           </div>
                         </TooltipContent>

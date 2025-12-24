@@ -31,13 +31,14 @@ import { Switch } from "@/components/ui/switch";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import ReceiptScanner from "./receipt-scanner";
+import { Account, AddTransactionFormProps, Category, ScannedReceipt, TransactionFormValues } from "@/types";
 
 const AddTransactionForm = ({
   accounts,
   categories,
   editMode = false,
   initialData = null,
-}: any) => {
+}: AddTransactionFormProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams?.get("edit");
@@ -71,7 +72,7 @@ const AddTransactionForm = ({
             type: "EXPENSE",
             amount: "",
             description: "",
-            accountId: accounts.find((ac: any) => ac.isDefault)?.id,
+            accountId: accounts.find((ac: Account) => ac.isDefault)?.id,
             date: new Date(),
             category: "",
             isRecurring: false,
@@ -88,7 +89,7 @@ const AddTransactionForm = ({
   const isRecurring = watch("isRecurring");
   const date = watch("date");
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: TransactionFormValues) => {
     const formData = {
       ...data,
       amount: parseFloat(data.amount),
@@ -114,13 +115,13 @@ const AddTransactionForm = ({
       }
       router.push(`/account/${transactionResult.data.accountId}`);
     }
-  }, [transactionResult, transactionLoading, editMode]);
+  }, [transactionResult, transactionLoading, editMode, reset, router]);
 
   const filteredCategories = categories.filter(
-    (category: any) => category.type === type
+    (category: Category) => category.type === type
   );
 
-  const handleScanComplete = (scannedData: any) => {
+  const handleScanComplete = (scannedData: ScannedReceipt) => {
     if (scannedData) {
       setValue("amount", scannedData.amount.toString());
       setValue("date", new Date(scannedData.date));
@@ -188,7 +189,7 @@ const AddTransactionForm = ({
               <SelectValue placeholder="Select account " />
             </SelectTrigger>
             <SelectContent>
-              {accounts.map((account: any) => (
+              {accounts.map((account: Account) => (
                 <SelectItem key={account.id} value={account.id}>
                   {account.name} (${parseFloat(account.balance).toFixed(2)})
                 </SelectItem>
@@ -215,14 +216,14 @@ const AddTransactionForm = ({
       <div className="space-y-2">
         <label className="text-sm font-medium">Category</label>
         <Select
-          onValueChange={(value) => setValue("category", value as any)}
+          onValueChange={(value) => setValue("category", value)}
           defaultValue={getValues("category")}
         >
           <SelectTrigger className="w-full">
             <SelectValue placeholder="Select category " />
           </SelectTrigger>
           <SelectContent>
-            {filteredCategories.map((category: any) => (
+            {filteredCategories.map((category: Category) => (
               <SelectItem key={category.id} value={category.id}>
                 {category.name}
               </SelectItem>

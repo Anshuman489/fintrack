@@ -187,6 +187,18 @@ export default function EmailTemplate({
       </Html>
     );
   }
+  // Add this fallback:
+  return (
+    <Html>
+      <Head />
+      <Preview>FinTrack Email</Preview>
+      <Body>
+        <Container>
+          <Text>Unknown email type.</Text>
+        </Container>
+      </Body>
+    </Html>
+  );
 }
 
 const styles = {

@@ -20,12 +20,8 @@ import {
   Legend,
 } from "recharts";
 
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Transaction } from "@/types";
 
 const DATE_RANGES = {
   "7D": { label: "Last 7 Days", days: 7 },
@@ -37,7 +33,9 @@ const DATE_RANGES = {
 
 type DateRangeKey = keyof typeof DATE_RANGES;
 
-const AccountChart = ({ transactions }: any) => {
+type ChartDay = { date: string; income: number; expense: number };
+
+const AccountChart = ({ transactions }: { transactions: Transaction[] }) => {
   const [dateRange, setDateRange] = useState<DateRangeKey>("1M");
 
   const filteredData = useMemo(() => {
@@ -50,15 +48,12 @@ const AccountChart = ({ transactions }: any) => {
 
     //filter transactions within date ranges
     const filtered = transactions.filter(
-      (t: any) =>
+      (t: Transaction) =>
         new Date(t.date) >= startDate && new Date(t.date) <= endOfDay(now)
     );
 
     const grouped = filtered.reduce(
-      (
-        acc: Record<string, { date: string; income: number; expense: number }>,
-        transaction: any
-      ) => {
+      (acc: Record<string, ChartDay>, transaction: Transaction) => {
         const date = format(new Date(transaction.date), "MMM dd");
 
         if (!acc[date]) {
@@ -76,17 +71,14 @@ const AccountChart = ({ transactions }: any) => {
       {}
     );
     return Object.values(grouped).sort(
-      (a: any, b: any) =>
+      (a: ChartDay, b: ChartDay) =>
         new Date(a.date).getTime() - new Date(b.date).getTime()
     );
   }, [transactions, dateRange]);
 
   const totals = useMemo(() => {
     return filteredData.reduce(
-      (
-        acc: Record<string, { date: string; income: number; expense: number }>,
-        day: any
-      ) => ({
+      (acc: { income: number; expense: number }, day: ChartDay) => ({
         income: acc.income + day.income,
         expense: acc.expense + day.expense,
       }),
@@ -104,7 +96,7 @@ const AccountChart = ({ transactions }: any) => {
           defaultValue={dateRange}
           onValueChange={(value) => setDateRange(value as DateRangeKey)}
         >
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-35">
             <SelectValue placeholder="Select Range" />
           </SelectTrigger>
           <SelectContent>
@@ -145,7 +137,7 @@ const AccountChart = ({ transactions }: any) => {
             </p>
           </div>
         </div>
-        <div className="h-[300px]">
+        <div className="h-75">
           <BarChart
             style={{
               width: "100%",

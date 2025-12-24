@@ -3,6 +3,14 @@ import { inngest } from "./client";
 import prisma from "@/lib/prisma";
 import EmailTemplate from "@/emails/template";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import type { Transaction as PrismaTransaction } from "@prisma/client";
+
+type MonthlyStats = {
+  totalExpenses: number;
+  totalIncome: number;
+  byCategory: Record<string, number>;
+  transactionCount: number;
+};
 
 export const checkBudgetAlert = inngest.createFunction(
   { id: "check-budget-alerts", name: "Check Budget Alerts" },
@@ -80,7 +88,7 @@ export const checkBudgetAlert = inngest.createFunction(
                 totalExpenses: totalExpenses.toFixed(1),
                 accountName: defaultAccount.name,
               },
-            }),
+            })
           });
 
           //update lastAlertSent
@@ -211,9 +219,11 @@ export const processRecurringTransaction = inngest.createFunction(
   }
 );
 
-function isTransactionDue(transaction: any) {
+function isTransactionDue(transaction: PrismaTransaction) {
   //If no lastProcessed date, transaction is due
   if (!transaction.lastProcessed) return true;
+
+  if (!transaction.nextRecurringDate) return false; // Not due if no next date
 
   const today = new Date();
   const nextDue = new Date(transaction.nextRecurringDate);
@@ -288,9 +298,9 @@ export const generateMonthlyReports = inngest.createFunction(
   }
 );
 
-async function generateFinancialInsights(stats: any, month: string) {
+async function generateFinancialInsights(stats: MonthlyStats, month: string) {
   const genAi = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
-  const model = genAi.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const model = genAi.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
   const prompt = `
     Analyze this financial data and provide 3 concise, actionable insights.

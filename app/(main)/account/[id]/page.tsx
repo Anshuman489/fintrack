@@ -42,7 +42,7 @@ async function AccountContent({ id }: { id: string }) {
   );
 }
 
-const AccountsPage = async ({ params }: any) => {
+const AccountsPage = async ({ params }: { params: { id: string } }) => {
   const { id } = await params;
 
   return (

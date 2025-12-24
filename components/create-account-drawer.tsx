@@ -26,10 +26,13 @@ import useFetch from "@/hooks/use-fetch";
 import { createAccount } from "@/actions/dashboard";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import type { z } from "zod";
 
 type CreateAccountDrawerProps = {
   children: React.ReactNode;
 };
+
+type AccountFormData = z.infer<typeof accountSchema>;
 
 const CreateAccountDrawer = ({ children }: CreateAccountDrawerProps) => {
   const [open, setOpen] = useState(false);
@@ -64,15 +67,15 @@ const CreateAccountDrawer = ({ children }: CreateAccountDrawerProps) => {
       reset();
       setOpen(false);
     }
-  }, [createAccountLoading, newAccount]);
+  }, [createAccountLoading, newAccount, reset]);
 
   useEffect(() => {
-    if(error){
+    if (error) {
       toast.error(error.message || "Failed to create account");
     }
-  }, [error])
-  
-  const onSubmit = async (data: any) => {
+  }, [error]);
+
+  const onSubmit = async (data: AccountFormData) => {
     await createAccountFn(data);
   };
   return (
@@ -150,7 +153,7 @@ const CreateAccountDrawer = ({ children }: CreateAccountDrawerProps) => {
                   This account will be selected by default for transactions
                 </p>
               </div>
-              
+
               <Switch
                 id="isDefault"
                 onCheckedChange={(value) => setValue("isDefault", value)}

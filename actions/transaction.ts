@@ -6,12 +6,22 @@ import { revalidatePath } from "next/cache";
 import { request } from "@arcjet/next";
 import aj from "@/lib/arcjet";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import { Transaction } from "@/types";
+import type { Transaction as PrismaTransaction } from "@prisma/client";
 
 const genAi = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
-const serializeAmount = (obj: any) => ({
+const serializeAmount = (obj: PrismaTransaction): Transaction => ({
   ...obj,
+  date: obj.date instanceof Date ? obj.date.toISOString() : String(obj.date),
+  description: obj.description ?? "",
   amount: obj.amount.toNumber(),
+  recurringInterval: obj.recurringInterval ?? undefined,
+  nextRecurringDate: obj.nextRecurringDate
+    ? (obj.nextRecurringDate instanceof Date
+        ? obj.nextRecurringDate.toISOString()
+        : String(obj.nextRecurringDate))
+    : undefined,
 });
 
 interface CreateTransactionData {
@@ -128,7 +138,7 @@ function calculateNextRecurringDate(startDate: Date, interval: string) {
 
 export async function scanReceipt(file: File) {
   try {
-    const model = genAi.getGenerativeModel({ model: "gemini-2.5-flash" });
+    const model = genAi.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
     //convert file to ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
@@ -212,7 +222,7 @@ export async function getTransaction(id: string) {
   return serializeAmount(transaction);
 }
 
-export async function updateTransaction(id: string, data: any) {
+export async function updateTransaction(id: string, data: CreateTransactionData) {
   try {
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");

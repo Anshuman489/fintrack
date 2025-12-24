@@ -4,13 +4,17 @@ import React, { Suspense } from "react";
 import AddTransactionForm from "../_components/transaction-form";
 import { BarLoader } from "react-spinners";
 import { getTransaction } from "@/actions/transaction";
+import { SearchParams } from "@/types";
 
 // Create a separate server component for data fetching
-async function TransactionFormWrapper({ searchParams }: any) {
+async function TransactionFormWrapper({ searchParams }: { searchParams: SearchParams }) {
   const accounts = await getUserAccounts();
 
+  // Await searchParams before using its properties
+  // Await searchParams before using its properties
   const params = await searchParams;
-  const editId = params?.edit;
+  const rawEdit = params.edit;
+  const editId = Array.isArray(rawEdit) ? rawEdit[0] : rawEdit;
 
   let initialData = null;
   if (editId) {
@@ -33,7 +37,7 @@ async function TransactionFormWrapper({ searchParams }: any) {
   );
 }
 
-const AddTransactionPage = ({ searchParams }: { searchParams: any }) => {
+const AddTransactionPage = ({ searchParams }: { searchParams: SearchParams }) => {
   return (
     <div className="max-w-3xl mx-auto px-5">
       <Suspense
