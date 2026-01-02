@@ -184,7 +184,7 @@ export const processRecurringTransaction = inngest.createFunction(
             type: transaction.type,
             amount: transaction.amount,
             description: `${transaction.description} (Recurring)`,
-            date: new Date(),
+            date: transaction.nextRecurringDate || transaction.date,
             category: transaction.category,
             userId: transaction.userId,
             accountId: transaction.accountId,
@@ -209,7 +209,7 @@ export const processRecurringTransaction = inngest.createFunction(
           data: {
             lastProcessed: new Date(),
             nextRecurringDate: calculateNextRecurringDate(
-              new Date(),
+              transaction.nextRecurringDate || transaction.date, //calculate from the due date
               transaction.recurringInterval ?? "MONTHLY"
             ),
           },
